@@ -47,6 +47,42 @@ check_command() {
   return 0
 }
 
+setup_wine_path() {
+  # Prüfe ob wine bereits verfügbar ist
+  if check_command "wine"; then
+    return 0
+  fi
+  
+  # Auf Steam Deck: versuche Proton wine zu verwenden
+  if [[ "$SYSTEM_TYPE" == "steamos" ]]; then
+    log "Wine nicht in PATH gefunden, versuche Proton Wine zu finden..."
+    
+    # Suche nach Proton Wine
+    local PROTON_WINE=""
+    
+    # Check für aktuelle Proton Installation
+    if [[ -d "$HOME/.steam/root/compatibilitytools" ]]; then
+      PROTON_WINE=$(find "$HOME/.steam/root/compatibilitytools" -type f -name "wine64" 2>/dev/null | head -n 1)
+    fi
+    
+    if [[ -z "$PROTON_WINE" ]] && [[ -d "$HOME/.var/app/com.valvesoftware.Steam" ]]; then
+      PROTON_WINE=$(find "$HOME/.var/app/com.valvesoftware.Steam" -type f -name "wine64" 2>/dev/null | head -n 1)
+    fi
+    
+    if [[ -n "$PROTON_WINE" ]]; then
+      PROTON_DIR=$(dirname "$PROTON_WINE")
+      log "Gefunden: Proton Wine in $PROTON_DIR"
+      export PATH="$PROTON_DIR:$PATH"
+      return 0
+    fi
+    
+    log "Warnung: Proton Wine nicht gefunden - versuche rpm-ostree wine..."
+  fi
+  
+  # Nichts gefunden
+  return 1
+}
+
 ### ===== Pakete installieren =====
 
 log "Erkanntes System: $SYSTEM_TYPE"
@@ -72,6 +108,14 @@ else
   log "Erforderlich: wine, winetricks, wget, fuseiso"
 fi
 
+### ===== Wine Path setup =====
+
+if ! setup_wine_path; then
+  err "Wine konnte nicht gefunden werden!"
+  err "Auf Steam Deck: Versuche nach einem Neustart erneut zu starten oder installiere wine manuell"
+  err "Auf anderen Systemen: Wine ist nicht installiert"
+fi
+
 ### ===== Wineprefix vorbereiten =====
 
 WORKDIR_ABS="$(cd "$WORKDIR" && pwd)"
@@ -87,7 +131,11 @@ if [[ ! -d "$WINEPREFIX" ]]; then
 fi
 
 log "Installiere Winetricks..."
-winetricks -q d3dx9 vcrun6 corefonts gdiplus msls31 riched20 || log "Winetricks-Warnungen ignorierbar."
+if check_command "winetricks"; then
+  winetricks -q d3dx9 vcrun6 corefonts gdiplus msls31 riched20 || log "Winetricks-Warnungen ignorierbar."
+else
+  log "Warnung: winetricks nicht verfügbar - überspringe DLLs (könnte bei Proton OK sein)"
+fi
 
 ### ===== Verzeichnisse erstellen =====
 
