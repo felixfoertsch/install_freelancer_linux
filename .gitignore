@@ -1,0 +1,17 @@
+# Downloads
+download/
+
+# Wine installation
+wine-freelancer/
+
+# ISO and temp files
+*.iso
+*.zip
+mount_temp/
+nocd_temp/
+mount/
+freelancer_nocd_tmp/
+
+# Temp files
+*.log
+*.tmp
