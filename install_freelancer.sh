@@ -1,6 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+### ===== Umgebungserkennung =====
+
+detect_system() {
+  if [[ -f /etc/steamos-os-release ]]; then
+    echo "steamos"
+  elif [[ -f /etc/os-release ]] && grep -q "CachyOS" /etc/os-release; then
+    echo "cachyos"
+  elif [[ -f /etc/os-release ]] && grep -q "Arch" /etc/os-release; then
+    echo "arch"
+  elif [[ -f /etc/os-release ]] && grep -q "Ubuntu\|Debian" /etc/os-release; then
+    echo "debian"
+  else
+    echo "unknown"
+  fi
+}
+
+SYSTEM_TYPE=$(detect_system)
+
 ### ===== Konfiguration =====
 
 # Versions-URLs
@@ -22,10 +40,38 @@ MOUNT_DIR="./mount_temp"
 log() { echo -e "[*] $*"; }
 err() { echo -e "[!] $*" >&2; exit 1; }
 
-### ===== Pakete installieren =====
+check_command() {
+  if ! command -v "$1" &> /dev/null; then
+    return 1
+  fi
+  return 0
+}
 
-log "Installiere benötigte Pakete..."
-sudo pacman -S --needed --noconfirm wine winetricks wget wine-gecko wine-mono fuseiso
+### ===== Pakete installieren (nur auf CachyOS/Arch) =====
+
+log "Erkanntes System: $SYSTEM_TYPE"
+
+if [[ "$SYSTEM_TYPE" == "steamos" ]]; then
+  log "Steam Deck erkannt - überspringe Paketinstallation (read-only filesystem)"
+  log "Stelle sicher, dass folgende Tools verfügbar sind:"
+  log "  - wine, winetricks, wget, fuseiso"
+  
+  # Prüfe verfügbare Tools
+  for cmd in wine winetricks wget; do
+    if ! check_command "$cmd"; then
+      err "$cmd ist nicht installiert!"
+    fi
+  done
+elif [[ "$SYSTEM_TYPE" == "cachyos" ]] || [[ "$SYSTEM_TYPE" == "arch" ]]; then
+  log "Installiere benötigte Pakete..."
+  sudo pacman -S --needed --noconfirm wine winetricks wget wine-gecko wine-mono fuseiso
+elif [[ "$SYSTEM_TYPE" == "debian" ]]; then
+  log "Installiere benötigte Pakete für Ubuntu/Debian..."
+  sudo apt-get update && sudo apt-get install -y wine wine32 wine64 winetricks wget fuseiso
+else
+  log "Warnung: Unbekanntes System - überspringe Paketinstallation"
+  log "Stelle sicher, dass folgende Tools verfügbar sind: wine, winetricks, wget, fuseiso"
+fi
 
 ### ===== Wineprefix vorbereiten =====
 

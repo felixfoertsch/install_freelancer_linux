@@ -1,10 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+### ===== Umgebungserkennung =====
+
+detect_system() {
+  if [[ -f /etc/steamos-os-release ]]; then
+    echo "steamos"
+  elif [[ -f /etc/os-release ]] && grep -q "CachyOS" /etc/os-release; then
+    echo "cachyos"
+  elif [[ -f /etc/os-release ]] && grep -q "Arch" /etc/os-release; then
+    echo "arch"
+  elif [[ -f /etc/os-release ]] && grep -q "Ubuntu\|Debian" /etc/os-release; then
+    echo "debian"
+  else
+    echo "unknown"
+  fi
+}
+
+SYSTEM_TYPE=$(detect_system)
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 export WINEPREFIX="$SCRIPT_DIR/wine-freelancer"
 export WINEARCH="win64"
 export WINEDEBUG=-all
+
+echo "==================================="
+echo "Freelancer Launcher"
+echo "System: $SYSTEM_TYPE"
+echo "==================================="
+echo ""
 
 # Check if Freelancer is installed
 HD_EDITION_EXE="$WINEPREFIX/drive_c/Games/Freelancer HD Edition/EXE/Freelancer.exe"
