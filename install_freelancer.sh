@@ -99,8 +99,8 @@ ISO_FILE=$(find . -maxdepth 2 -type f -name "*.iso" | head -n 1)
 
 if [[ -z "$ISO_FILE" ]]; then
   if [[ ! -f "$DOWNLOAD_DIR/freelancer_iso.zip" ]]; then
-    log "Lade ISO herunter..."
-    wget -O "$DOWNLOAD_DIR/freelancer_iso.zip" "$FREELANCER_ISO_URL" || err "ISO Download fehlgeschlagen"
+    log "Lade ISO herunter... (dies kann ein paar Minuten dauern)"
+    wget -q -O "$DOWNLOAD_DIR/freelancer_iso.zip" "$FREELANCER_ISO_URL" || err "ISO Download fehlgeschlagen"
   else
     log "ISO ZIP bereits vorhanden"
   fi
@@ -167,7 +167,7 @@ log "=== Schritt 2: HD-Mod, Discovery & No-CD Download (parallel) ==="
 HDMOD_DL_PID=""
 if [[ ! -f "$DOWNLOAD_DIR/hdmod.exe" ]]; then
   log "Starte HD-Mod Download im Hintergrund..."
-  wget -O "$DOWNLOAD_DIR/hdmod.exe" "$HD_MOD_URL" &
+  wget -q -O "$DOWNLOAD_DIR/hdmod.exe" "$HD_MOD_URL" &
   HDMOD_DL_PID=$!
 fi
 
@@ -175,14 +175,14 @@ DISCOVERY_DL_PID=""
 DISCOVERY_INSTALLER="$DOWNLOAD_DIR/discovery_mod.exe"
 if [[ ! -f "$DISCOVERY_INSTALLER" ]]; then
   log "Starte Discovery Mod Download im Hintergrund..."
-  wget -O "$DISCOVERY_INSTALLER" "$DISCOVERY_MOD_URL" &
+  wget -q -O "$DISCOVERY_INSTALLER" "$DISCOVERY_MOD_URL" &
   DISCOVERY_DL_PID=$!
 fi
 
 NOCD_DL_PID=""
 if [[ ! -f "$DOWNLOAD_DIR/freelancer_nocd.zip" ]]; then
   log "Starte No-CD Download im Hintergrund..."
-  wget -O "$DOWNLOAD_DIR/freelancer_nocd.zip" "$FREELANCER_NOCD_URL" &
+  wget -q -O "$DOWNLOAD_DIR/freelancer_nocd.zip" "$FREELANCER_NOCD_URL" &
   NOCD_DL_PID=$!
 fi
 
