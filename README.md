@@ -27,6 +27,7 @@ Automated Freelancer installation script with support for HD Edition and Discove
 ```
 
 The script will automatically:
+
 1. Install required packages via pacman
 2. Download Freelancer ISO, HD Mod, Discovery Mod, and No-CD patch
 3. Set up Wine prefix and install silently
@@ -44,10 +45,12 @@ The script will automatically:
 ```
 
 On Steam Deck, the script will:
-1. Skip pacman installation (read-only filesystem)
-2. Use pre-installed Wine and tools
-3. Download and set up everything in your home directory
-4. Run the game via Proton/Wine
+1. Install required packages via `rpm-ostree` (SteamOS package manager)
+2. Download Freelancer ISO, HD Mod, Discovery Mod, and No-CD patch  
+3. Set up Wine prefix and install silently
+4. Show a menu to select which game version to play
+
+**Note:** The `rpm-ostree install` command may require a system restart after first run.
 
 ### On Ubuntu/Debian
 
@@ -88,7 +91,7 @@ Welchen Modus möchtest du spielen?
   [1] Freelancer HD Edition (Vanilla)
   [2] Discovery Mod
 
-Auswahl [1-2]: 
+Auswahl [1-2]:
 ```
 
 Select your preferred game version.
@@ -105,25 +108,32 @@ rm -rf wine-freelancer download
 The scripts automatically detect your system and configure accordingly:
 
 - **CachyOS/Arch**: Uses `pacman` for dependencies
-- **Steam Deck**: Skips installation (read-only FS), uses system Wine/tools
+- **Steam Deck (SteamOS)**: Uses `rpm-ostree install` for dependencies
 - **Ubuntu/Debian**: Uses `apt-get` for dependencies
-- **Unknown**: Warns you to ensure required tools are installed
+- **Unknown**: Guides you to install tools manually
 
 ## Troubleshooting
 
 ### "Read-only file system" error
 
-This is expected and handled on Steam Deck. The script skips package installation on read-only systems.
+This should not occur anymore as the script uses `rpm-ostree install` on Steam Deck to properly install packages.
+
+If you still get this error:
+- Make sure you're running from `$HOME` (not from system directories)
+- Check that `/var/lib/rpm-ostree` is writable
+- You may need to use `sudo` when running the script
 
 ### Wine tools not found
 
 Make sure you have Wine properly installed:
+
 - On Steam Deck: Use the system's built-in Wine/Proton
 - On other systems: Run the script with proper permissions
 
 ### Game doesn't launch
 
 Check the console output for error messages. Common issues:
+
 - Wine prefix not initialized properly
 - Missing No-CD patch
 - Game directory missing

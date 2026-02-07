@@ -47,30 +47,29 @@ check_command() {
   return 0
 }
 
-### ===== Pakete installieren (nur auf CachyOS/Arch) =====
+### ===== Pakete installieren =====
 
 log "Erkanntes System: $SYSTEM_TYPE"
 
 if [[ "$SYSTEM_TYPE" == "steamos" ]]; then
-  log "Steam Deck erkannt - überspringe Paketinstallation (read-only filesystem)"
-  log "Stelle sicher, dass folgende Tools verfügbar sind:"
-  log "  - wine, winetricks, wget, fuseiso"
+  log "Steam Deck erkannt - installiere Pakete mit rpm-ostree..."
+  log "Hinweis: Dies kann ein paar Minuten dauern"
   
-  # Prüfe verfügbare Tools
-  for cmd in wine winetricks wget; do
-    if ! check_command "$cmd"; then
-      err "$cmd ist nicht installiert!"
-    fi
-  done
+  sudo rpm-ostree install -y wine winetricks wget fuseiso flac || {
+    err "Paketinstallation mit rpm-ostree fehlgeschlagen. Möglicherweise benötigst du ein Update."
+  }
+  
+  log "Pakete installiert - ein Neustart könnte erforderlich sein"
 elif [[ "$SYSTEM_TYPE" == "cachyos" ]] || [[ "$SYSTEM_TYPE" == "arch" ]]; then
-  log "Installiere benötigte Pakete..."
+  log "Installiere benötigte Pakete mit pacman..."
   sudo pacman -S --needed --noconfirm wine winetricks wget wine-gecko wine-mono fuseiso
 elif [[ "$SYSTEM_TYPE" == "debian" ]]; then
   log "Installiere benötigte Pakete für Ubuntu/Debian..."
   sudo apt-get update && sudo apt-get install -y wine wine32 wine64 winetricks wget fuseiso
 else
-  log "Warnung: Unbekanntes System - überspringe Paketinstallation"
-  log "Stelle sicher, dass folgende Tools verfügbar sind: wine, winetricks, wget, fuseiso"
+  log "Warnung: Unbekanntes System"
+  log "Versuche manuell Pakete zu installieren oder verwende Paketmanager deines Systems"
+  log "Erforderlich: wine, winetricks, wget, fuseiso"
 fi
 
 ### ===== Wineprefix vorbereiten =====
