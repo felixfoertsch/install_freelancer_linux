@@ -36,6 +36,7 @@ The script will automatically:
 ### On Steam Deck
 
 **Prerequisites:**
+
 - Boot into Desktop Mode
 - Open Terminal
 - Navigate to this directory
@@ -45,8 +46,9 @@ The script will automatically:
 ```
 
 On Steam Deck, the script will:
+
 1. Install required packages via `rpm-ostree` (SteamOS package manager)
-2. Download Freelancer ISO, HD Mod, Discovery Mod, and No-CD patch  
+2. Download Freelancer ISO, HD Mod, Discovery Mod, and No-CD patch
 3. Set up Wine prefix and install silently
 4. Show a menu to select which game version to play
 
@@ -119,6 +121,7 @@ The scripts automatically detect your system and configure accordingly:
 This should not occur anymore as the script uses `rpm-ostree install` on Steam Deck to properly install packages.
 
 If you still get this error:
+
 - Make sure you're running from `$HOME` (not from system directories)
 - Check that `/var/lib/rpm-ostree` is writable
 - You may need to use `sudo` when running the script

@@ -136,7 +136,7 @@ fi
 # Fallback: Extrahiere ISO
 if [[ $MOUNT_SUCCESS -eq 0 ]]; then
   log "Extrahiere ISO Inhalte mit 7z..."
-  
+
   if command -v 7z &> /dev/null; then
     7z x -y "$ISO_FILE" -o"$MOUNT_DIR" > /dev/null 2>&1 || err "ISO Extraktion mit 7z fehlgeschlagen"
   elif command -v bsdtar &> /dev/null; then
@@ -146,7 +146,7 @@ if [[ $MOUNT_SUCCESS -eq 0 ]]; then
   else
     err "Keine Extraktion möglich: 7z, bsdtar oder unzip erforderlich"
   fi
-  
+
   log "ISO extrahiert"
 fi
 
