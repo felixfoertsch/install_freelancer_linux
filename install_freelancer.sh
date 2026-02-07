@@ -54,11 +54,11 @@ log "Erkanntes System: $SYSTEM_TYPE"
 if [[ "$SYSTEM_TYPE" == "steamos" ]]; then
   log "Steam Deck erkannt - installiere Pakete mit rpm-ostree..."
   log "Hinweis: Dies kann ein paar Minuten dauern"
-  
-  sudo rpm-ostree install -y wine winetricks wget fuseiso flac || {
+
+  sudo rpm-ostree install -y wine winetricks wget p7zip libarchive flac || {
     err "Paketinstallation mit rpm-ostree fehlgeschlagen. Möglicherweise benötigst du ein Update."
   }
-  
+
   log "Pakete installiert - ein Neustart könnte erforderlich sein"
 elif [[ "$SYSTEM_TYPE" == "cachyos" ]] || [[ "$SYSTEM_TYPE" == "arch" ]]; then
   log "Installiere benötigte Pakete mit pacman..."
@@ -113,7 +113,7 @@ fi
 
 log "Verwende ISO: $ISO_FILE"
 
-### ===== ISO mounten & Setup starten =====
+### ===== ISO mounten oder extrahieren =====
 
 if mountpoint -q "$MOUNT_DIR" 2>/dev/null; then
   fusermount -u "$MOUNT_DIR" 2>/dev/null || umount "$MOUNT_DIR" 2>/dev/null || true
@@ -121,11 +121,37 @@ fi
 
 mkdir -p "$MOUNT_DIR"
 
-log "Mounte ISO..."
-fuseiso "$ISO_FILE" "$MOUNT_DIR" || err "ISO-Mount fehlgeschlagen"
+# Versuche zu mounten, fallback auf Extraction
+MOUNT_SUCCESS=0
+if [[ "$SYSTEM_TYPE" == "steamos" ]]; then
+  log "Steam Deck erkannt - extrahiere ISO direkt statt zu mounten..."
+else
+  log "Versuche ISO zu mounten..."
+  if fuseiso "$ISO_FILE" "$MOUNT_DIR" 2>/dev/null; then
+    MOUNT_SUCCESS=1
+    log "ISO erfolgreich gemountet"
+  fi
+fi
+
+# Fallback: Extrahiere ISO
+if [[ $MOUNT_SUCCESS -eq 0 ]]; then
+  log "Extrahiere ISO Inhalte mit 7z..."
+  
+  if command -v 7z &> /dev/null; then
+    7z x -y "$ISO_FILE" -o"$MOUNT_DIR" > /dev/null 2>&1 || err "ISO Extraktion mit 7z fehlgeschlagen"
+  elif command -v bsdtar &> /dev/null; then
+    bsdtar -xf "$ISO_FILE" -C "$MOUNT_DIR" 2>/dev/null || err "ISO Extraktion mit bsdtar fehlgeschlagen"
+  elif command -v unzip &> /dev/null; then
+    unzip -o "$ISO_FILE" -d "$MOUNT_DIR" 2>/dev/null || err "ISO Extraktion mit unzip fehlgeschlagen"
+  else
+    err "Keine Extraktion möglich: 7z, bsdtar oder unzip erforderlich"
+  fi
+  
+  log "ISO extrahiert"
+fi
 
 log "Suche Setup.exe in ISO..."
-SETUP_EXE=$(find "$MOUNT_DIR" -maxdepth 2 -type f \( -iname "setup.exe" -o -iname "install.exe" \) | head -n 1)
+SETUP_EXE=$(find "$MOUNT_DIR" -maxdepth 3 -type f \( -iname "setup.exe" -o -iname "install.exe" \) | head -n 1)
 [[ -z "$SETUP_EXE" ]] && err "Setup.exe nicht in ISO gefunden"
 
 log "Starte Setup (silent) aus ISO..."
