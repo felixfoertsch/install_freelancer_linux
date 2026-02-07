@@ -52,33 +52,33 @@ setup_wine_path() {
   if check_command "wine"; then
     return 0
   fi
-  
+
   # Auf Steam Deck: versuche Proton wine zu verwenden
   if [[ "$SYSTEM_TYPE" == "steamos" ]]; then
     log "Wine nicht in PATH gefunden, versuche Proton Wine zu finden..."
-    
+
     # Suche nach Proton Wine
     local PROTON_WINE=""
-    
+
     # Check für aktuelle Proton Installation
     if [[ -d "$HOME/.steam/root/compatibilitytools" ]]; then
       PROTON_WINE=$(find "$HOME/.steam/root/compatibilitytools" -type f -name "wine64" 2>/dev/null | head -n 1)
     fi
-    
+
     if [[ -z "$PROTON_WINE" ]] && [[ -d "$HOME/.var/app/com.valvesoftware.Steam" ]]; then
       PROTON_WINE=$(find "$HOME/.var/app/com.valvesoftware.Steam" -type f -name "wine64" 2>/dev/null | head -n 1)
     fi
-    
+
     if [[ -n "$PROTON_WINE" ]]; then
       PROTON_DIR=$(dirname "$PROTON_WINE")
       log "Gefunden: Proton Wine in $PROTON_DIR"
       export PATH="$PROTON_DIR:$PATH"
       return 0
     fi
-    
+
     log "Warnung: Proton Wine nicht gefunden - versuche rpm-ostree wine..."
   fi
-  
+
   # Nichts gefunden
   return 1
 }

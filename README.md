@@ -52,7 +52,12 @@ On Steam Deck, the script will:
 3. Set up Wine prefix and install silently
 4. Show a menu to select which game version to play
 
-**Note:** The `rpm-ostree install` command may require a system restart after first run.
+**Important for Steam Deck:**
+
+- The `rpm-ostree install` command may require a **system restart** after first run
+- If "wine not found" error appears after restart, the packages should now be available
+- The script will automatically find Proton's wine as fallback
+- If still not found after restart, you may need to manually restart or check if packages were installed correctly
 
 ### On Ubuntu/Debian
 
@@ -128,10 +133,22 @@ If you still get this error:
 
 ### Wine tools not found
 
-Make sure you have Wine properly installed:
+The script automatically searches for wine in:
 
-- On Steam Deck: Use the system's built-in Wine/Proton
-- On other systems: Run the script with proper permissions
+1. System PATH (if already installed)
+2. Steam Deck Proton locations (if on Steam Deck)
+3. Freshly installed rpm-ostree packages
+
+**On Steam Deck:**
+
+- The script will try to find Proton's wine automatically
+- If `rpm-ostree install` was just run, a **system restart may be required** for packages to become available
+- After restart, try running `./play_freelancer.sh` again
+
+**On other systems:**
+
+- Make sure wine is properly installed: `pacman -S wine` (Arch) or `apt-get install wine` (Ubuntu)
+- Run the script with proper permissions (may need `sudo`)
 
 ### Game doesn't launch
 
