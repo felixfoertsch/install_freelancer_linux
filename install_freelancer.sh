@@ -132,7 +132,7 @@ fi
 
 log "Installiere Winetricks..."
 if check_command "winetricks"; then
-  winetricks -q d3dx9 vcrun6 corefonts gdiplus msls31 riched20 || log "Winetricks-Warnungen ignorierbar."
+  winetricks -q d3dx9 vcrun6 corefonts gdiplus msls31 riched20 msacm32 || log "Winetricks-Warnungen ignorierbar."
 else
   log "Warnung: winetricks nicht verfügbar - überspringe DLLs (könnte bei Proton OK sein)"
 fi
